@@ -1,0 +1,57 @@
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Dependency directories
+node_modules/
+env/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+
+# Environment variables
+*.env
+
+# Python cache directories and files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Cython debug symbols
+cython_debug/
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# pytype static type analyzer
+.pytype/
+
+# Ruff cache
+.ruff_cache/
+
+# Editor directories and files
+.vscode/
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# macOS specific files
+.DS_Store
+
+# Coverage directories
+coverage/
