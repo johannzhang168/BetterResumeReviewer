@@ -10,10 +10,10 @@ const App: React.FC = () => {
         {/* Navbar */}
         <nav className="bg-blue-600 text-white p-4 shadow-lg">
           <div className="max-w-5xl mx-auto flex justify-between items-center">
-            <h1 className="text-xl font-bold">Resume Reviewer</h1>
+          <Link to="/" className="text-xl font-bold hover:underline">Resume Reviewer</Link>
             <ul className="flex space-x-6">
               <li><Link to="/" className="hover:underline">Home</Link></li>
-              <li><Link to="/login" className="hover:underline">Register</Link></li>
+              <li><Link to="/signup" className="hover:underline">Register</Link></li>
               <li><Link to="#" className="hover:underline">Contact</Link></li>
             </ul>
           </div>
@@ -38,7 +38,7 @@ const Home: React.FC = () => {
         <h2 className="text-4xl font-extrabold">Get Your Resume Reviewed by Experts</h2>
         <p className="mt-4 text-lg text-gray-600">Increase your chances of landing your dream job!</p>
         
-        <Link to="/login">
+        <Link to="/signup">
           <button className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
             Start Here
           </button>
