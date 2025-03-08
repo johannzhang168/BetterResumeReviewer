@@ -1,11 +1,19 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Signup: React.FC = () => {
+  const navigate = useNavigate();
+
+  const handleSignup = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Future: Add signup logic
+    navigate("/dashboard"); // Redirect to dashboard after signup
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 shadow-lg rounded-lg w-96">
         <h2 className="text-2xl font-bold text-center mb-4">Create an Account</h2>
-        <form>
+        <form onSubmit={handleSignup}>
           <label className="block mb-2">First Name:</label>
           <input type="text" className="w-full p-2 border rounded mb-4" placeholder="Enter your first name" />
 
