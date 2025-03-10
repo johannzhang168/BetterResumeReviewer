@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const Navbar = () => {
+  //This needs to dynamically change because when we go to dashboard this will become the search bar
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
