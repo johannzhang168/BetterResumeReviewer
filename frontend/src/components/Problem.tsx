@@ -72,11 +72,11 @@ export function Problem() {
         className="mt-12"
       >
         <a
-          href="#how-it-works"
+          href="#solution"
           onClick={(e) => {
             e.preventDefault();
             document
-              .getElementById("how-it-works")
+              .getElementById("solution")
               ?.scrollIntoView({ behavior: "smooth" });
           }}
           className="inline-block bg-blue-600 py-4 px-10 rounded-lg shadow-lg hover:bg-blue-600/90 hover:shadow-blue-600/30 transform hover:scale-105 transition-all duration-300 ease-in-out"
