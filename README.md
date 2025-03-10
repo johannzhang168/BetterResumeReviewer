@@ -11,5 +11,6 @@ Run locally: cd backend -> python -m venv venv -> source venv/bin/activate -> pi
 
 ```bash
 uvicorn main:app --reload
+```
 
 
