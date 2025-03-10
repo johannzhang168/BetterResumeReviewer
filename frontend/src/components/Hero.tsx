@@ -19,16 +19,16 @@ export function Hero() {
       <span className="bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent">
         <TypeAnimation
           sequence={[
-            "CS job hunting is stressful.", // Type this first
-            500, // Pause for 1 second
-            "Getting job interviews is tough.", // Replace with this
-            1000, // Pause again
-            "We want to make it better.", // Another variation
-            1000, // Pause
+            "CS job hunting sucks.", 
+            1000, 
+            "Getting interviews is tough.", 
+            1000, 
+            "We're here to make it easier.", 
+            1000, 
           ]}
           wrapper="span"
-          speed={50} // Adjust typing speed
-          repeat={Infinity} // Infinite loop
+          speed={50} 
+          repeat={Infinity}
         />
       </span>
       {/* to land your next dream job */}
