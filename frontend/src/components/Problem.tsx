@@ -48,7 +48,7 @@ export function Problem() {
           </div>
           <div className="flex items-start space-x-3">
             <Code className="text-blue-600 text-2xl" />
-            <p className="text-lg text-gray-800">Most college students struggle with finding experience, not formatting experience on thier resume</p>
+            <p className="text-lg text-gray-800">Most college students struggle with finding experience, not formatting experience on their resume</p>
           </div>
           <div className="flex items-start space-x-3">
             <UserCheck className="text-blue-600 text-2xl" />
@@ -58,7 +58,7 @@ export function Problem() {
           </div>
           <div className="flex items-start space-x-3">
             <School className="text-blue-600 text-2xl" />
-            <p className="text-lg text-gray-800">School career centers are a hit or miss depending on which college you go to</p>
+            <p className="text-lg text-gray-800">Many university career centers are known to be extremely unreliable in offering individual and even career-specific guidance. </p>
           </div>
         </motion.div>
       </motion.div>

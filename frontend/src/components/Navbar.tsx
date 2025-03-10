@@ -36,7 +36,7 @@ const Navbar = () => {
         <div className="text-2xl md:text-3xl font-bold tracking-tight text-black "
         style={{ fontFamily: "Avenir, system-ui, Helvetica, Arial, sans-serif" }}
         >
-          Resume Reviewer
+          BetterResumeReviewer
         </div>
       </div>
 

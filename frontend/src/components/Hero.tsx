@@ -2,8 +2,10 @@
 
 import { motion } from "framer-motion"
 import { TypeAnimation } from "react-type-animation";
+import { useNavigate } from "react-router-dom";
 
 export function Hero() {
+  const navigate = useNavigate();
   return (
   <section className="relative flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-gray-900 text-center p-6 overflow-hidden">
      {/* <div className="absolute inset-0 z-0 animated-gradient"></div> */}
@@ -51,11 +53,12 @@ export function Hero() {
       // document
       // .getElementById("solutions")
       // ?.scrollIntoView({ behavior: "smooth" });
+      navigate("/signup") // route to signup component
       }}
       className="mt-8 px-10 py-5 rounded-xl shadow-lg bg-blue-600 hover:bg-blue-600/90 hover:shadow-blue-600/30 transition-transformtransform hover:scale-105 transition-all duration-300 ease-in-out z-10"
       >
       <p className="text-white text-lg sm:text-xl font-semibold">
-      Sign up today for free
+      Sign up for free today
       </p>
       </motion.button>
     </section>
