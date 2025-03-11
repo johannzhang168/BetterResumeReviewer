@@ -9,7 +9,7 @@ interface ResumeCardProps {
 }
 const ResumeCard:React.FC<ResumeCardProps> = ({id, title, dateOpened, coverImage}) => {
   return(
-    <div key={id} onClick={() => console.log("eeeee")} className="border border-gray-400 rounded-lg bg-white p h-[333px] w-[283px] hover:cursor-pointer hover:border-blue-500">
+    <div key={id} onClick={() => console.log("eeeee")} className="border border-gray-400 rounded-lg bg-white p h-[333px] w-[252px] hover:cursor-pointer hover:border-blue-500">
       <div className="h-9/12 rounded-t-lg overflow-hidden border-b border-gray-400">
         <img src={coverImage} alt="Resume Cover Image" className="w-full h-full object-cover" />
       </div>
