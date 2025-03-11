@@ -1,5 +1,17 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Pacifico&display=swap');
 @import "tailwindcss";
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-sans: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --font-cursive: 'Dancing Script', 'Pacifico', cursive;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+@layer utilities {
+  .font-cursive {
+    font-family: var(--font-cursive);
+  }
 }
