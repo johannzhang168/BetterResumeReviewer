@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { Hero } from "../components/Hero";
-import { Problem } from "../components/Problem";
-import { Solution } from "../components/Solution";
-import { SignUpToday } from "../components/SignUpToday";
+import { Hero } from "../components/homepage/Hero";
+import { Problem } from "../components/homepage/Problem";
+import { Solution } from "../components/homepage/Solution";
+import { SignUpToday } from "../components/homepage/SignUpToday";
 
 export default function Home() {
   const [scrollY, setScrollY] = useState(0);

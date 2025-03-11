@@ -27,7 +27,7 @@ const Navbar = () => {
         <motion.img
           src="./image.png"
           alt="logo"
-          className="w-10 h-10 md:w-12 md:h-12 opacity-80"
+          className="w-10 h-10 md:w-12 md:h-14 opacity-80"
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 2 }}

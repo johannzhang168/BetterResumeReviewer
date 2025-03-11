@@ -8,7 +8,7 @@ import Layout from "./layout";
 const App: React.FC = () => {
   return (
     <Router>
-      <div className="min-h-screen">
+
       <Layout>
         <Routes>
           <Route path="/" element={<Home />} />
@@ -17,8 +17,7 @@ const App: React.FC = () => {
           <Route path="/dashboard" element={<Dashboard />} />
         </Routes>
       </Layout>
-        
-      </div>
+      
     </Router>
   );
 };
