@@ -17,7 +17,12 @@ const ResumeCard:React.FC<ResumeCardProps> = ({id, title, dateOpened, coverImage
         <p className="text-lg font-bold truncate">{title}</p> 
         <div className="flex items-center gap-x-2 mt-1">
           <img src="./image.png" className="w-8 h-9 opacity-80" />
-          <p className="text-sm font-bold text-gray-400">{dateOpened.toISOString()}</p>
+          <p className="text-sm font-bold text-gray-400">
+            {new Date(dateOpened).toDateString() === new Date().toDateString()
+              ? `Opened ${new Date(dateOpened).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit', hour12: true })}`
+              : `Opened ${new Date(dateOpened).toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' })}`}
+          </p>
+
         </div>
       </div>
      
