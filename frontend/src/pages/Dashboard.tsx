@@ -17,7 +17,7 @@ const Dashboard: React.FC = () => {
   // };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 flex justify-center">
+    <div className="min-h-screen bg-blue-100 p-6 flex justify-center">
       <div className="grid grid-cols-[repeat(auto-fit,252px)] mt-25 justify-center gap-x-6 gap-y-6 max-w-[85vw]">
         <NewResumeCard onClick={() => console.log("eeee")} />
         {resumes.map((resume) => (

@@ -5,7 +5,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom"
 import SearchBar from "./SearchBar";
-import { User } from "lucide-react"
+// import { User } from "lucide-react"
+import UserIcon from "./UserIcon";
 
 const Navbar = () => {
   //This needs to dynamically change because when we go to dashboard this will become the search bar
@@ -38,8 +39,8 @@ const Navbar = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 2 }}  
           />
-          <div className="text-2xl md:text-3xl font-bold tracking-tight text-black "
-          style={{ fontFamily: "'Pacifico', 'Dancing Script', cursive" }}
+          <div className="text-2xl md:text-3xl font-bold tracking-tight text-gray-700 "
+          style={{ fontFamily: "Arial, sans-serif" }}
           >
             StrongHire
           </div>
@@ -108,15 +109,15 @@ const Navbar = () => {
         <div className="flex-grow flex justify-center">
           <SearchBar onChange={(arg) => console.log(arg)} />
         </div>
-
         <div className="relative">
-          <button
+          {/* <button
             className="p-2 bg-gray-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-300"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             aria-label="Toggle menu"
           >
             <User className="w-8 h-8 text-gray-700" />
-          </button>
+          </button> */}
+          <UserIcon/>
           <ul
             className={`absolute right-0 top-full mt-2 bg-white rounded-lg border border-gray-200 overflow-hidden transition-all duration-300 ${
               isMenuOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
@@ -138,13 +139,11 @@ const Navbar = () => {
                 console.log("about clicked");
               }}
             >
-              About
+              Account
             </li>
           </ul>
         </div>
       </nav>
-    
-  
   );
   
 };

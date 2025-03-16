@@ -13,7 +13,7 @@ export function Hero() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 1 }}
-      className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 mt-20 text-black max-w-3xl mx-auto z-10 tracking-tight"
+      className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6 mt-30 text-black max-w-3xl mx-auto z-10 tracking-tight"
       >
       
       <span className="bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent">

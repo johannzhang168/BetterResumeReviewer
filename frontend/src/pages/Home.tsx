@@ -4,7 +4,7 @@ import { Problem } from "../components/homepage/Problem";
 import { Solution } from "../components/homepage/Solution";
 import { SignUpToday } from "../components/homepage/SignUpToday";
 
-export default function Home() {
+const Home: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
 
   useEffect(() => {
@@ -31,3 +31,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home
