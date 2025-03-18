@@ -10,10 +10,10 @@ class User(BaseModel):
         lastName: Optional[str] = Field(None)
         email: EmailStr = Field(...)
         hashedPassword: Optional[str] = Field(None, description="password will be stored as hash for safety")
-        graduationYear: int = Field(...)
+        graduationYear: Optional[int] = Field(...)
         resumes: List[str] = Field(default=[], description="list of users resumes stored as s3 links")
         chats: List[str] = Field(default=[], description="ids of the resume review chats")
-        dateCreated: date = Field(default_factory= datetime.utcnow)   
+        dateCreated: str = Field(default_factory=lambda: datetime.datetime.now(datetime.timezone.utc).date().isoformat())
         authProvider: str = Field(..., description="Authentication provider: google, github, local")
 
 

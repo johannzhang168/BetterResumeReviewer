@@ -7,11 +7,15 @@ import os
 from dotenv import load_dotenv
 import uuid
 import bcrypt
+from models.user import User
+from starlette.responses import RedirectResponse
+from fastapi.responses import HTMLResponse
 
 
 load_dotenv()
 
 JWT_SECRET = os.getenv("JWT_SECRET")
+BASE_URL = os.getenv("BASE_URL")
 
 router = APIRouter()
 
@@ -20,9 +24,17 @@ def generate_jwt(user):
         "id": user["id"],
         "email": user["email"],
         "authProvider": user["authProvider"],
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(days=7)
+        "exp": datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(days=7)
     }
     return jwt.encode(payload, JWT_SECRET, algorithm="HS256")
+
+
+@router.get("/auth/github")
+async def github_login(request: Request):
+    redirect_uri = f"{BASE_URL}/auth/github/callback"
+    redirect_response = await oauth.github.authorize_redirect(request, redirect_uri)
+    redirect_url = redirect_response.headers["location"]
+    return RedirectResponse(redirect_url)
 
 @router.get("/auth/github/callback")
 async def github_callback(request: Request):
@@ -35,25 +47,58 @@ async def github_callback(request: Request):
     existing_user = get_user_by_email(email)
     if existing_user:
         jwt_token = generate_jwt(existing_user)
-        return {"user": existing_user, "token": jwt_token}
-    
-    new_user = {
-        "id": str(uuid.uuid4()),
-        "firstName": user_info.get("name", "").split()[0] if user_info.get("name") else None,
-        "lastName": user_info.get("name", "").split()[-1] if user_info.get("name") else None,
-        "email": email,
-        "hashedPassword": None, 
-        "graduationYear": None,
-        "resumes": [],
-        "chats": [],
-        "dateCreated": datetime.datetime.utcnow().isoformat(),
-        "authProvider": "github"
-    }
-    create_user(new_user)
+        return HTMLResponse(f"""
+        <script>
+            window.opener.postMessage({{
+                token: "{jwt_token}",
+                user: {{
+                    id: "{existing_user['id']}",
+                    email: "{email}",
+                    firstName: "{existing_user['firstName']}",
+                    lastName: "{existing_user['lastName']}"
+                }}
+            }}, "*");
+            window.close();
+        </script>
+        """)
 
-    jwt_token = generate_jwt(new_user)
-    return {"user": new_user, "token": jwt_token}
+    new_user = User(
+        id=str(uuid.uuid4()),
+        firstName= user_info.get("name", "").split()[0] if user_info.get("name") else None,
+        lastName= user_info.get("name", "").split()[-1] if user_info.get("name") else None,
+        email= email,
+        hashedPassword=None,
+        graduationYear=None,
+        resumes=[],
+        chats=[],
+        dateCreated=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        authProvider="github",
 
+    )
+    create_user(new_user.model_dump())
+
+    jwt_token = generate_jwt(new_user.model_dump())
+    return HTMLResponse(f"""
+        <script>
+            window.opener.postMessage({{
+                token: "{jwt_token}",
+                user: {{
+                    id: "{new_user.id}",
+                    email: "{email}",
+                    firstName: "{new_user.firstName}",
+                    lastName: "{new_user.lastName}"
+                }}
+            }}, "*");
+            window.close();
+        </script>
+    """)
+
+@router.get("/auth/google")
+async def google_login(request: Request):
+    redirect_uri=f"{BASE_URL}/auth/google/callback"
+    redirect_response = await oauth.google.authorize_redirect(request, redirect_uri)
+    redirect_url = redirect_response.headers["location"]
+    return RedirectResponse(redirect_url)
 
 @router.get("/auth/google/callback")
 async def google_callback(request: Request):
@@ -66,23 +111,49 @@ async def google_callback(request: Request):
 
     if existing_user:
         jwt_token = generate_jwt(existing_user)
-        return {"user": existing_user, "token": jwt_token}
-    new_user = {
-        "id": str(uuid.uuid4()),
-        "firstName": user_info.get("given_name"),
-        "lastName": user_info.get("family_name"),
-        "email": email,
-        "hashedPassword": None, 
-        "graduationYear": None,
-        "resumes": [],
-        "chats": [],
-        "dateCreated": datetime.datetime.utcnow().isoformat(),
-        "authProvider": "google"
-    }
-    create_user(new_user)
+        return HTMLResponse(f"""
+        <script>
+            window.opener.postMessage({{
+                token: "{jwt_token}",
+                user: {{
+                    id: "{existing_user['id']}",
+                    email: "{email}",
+                    firstName: "{existing_user['firstName']}",
+                    lastName: "{existing_user['lastName']}"
+                }}
+            }}, "*");
+            window.close();
+        </script>
+        """)
+    new_user = User(
+        id=str(uuid.uuid4()),
+        firstName=user_info.get("given_name"),
+        lastName=user_info.get("family_name"),
+        email=email,
+        hashedPassword=None, 
+        graduationYear=None,
+        resumes=[],
+        chats=[],
+        dateCreated=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        authProvider="google",
+    )
+    create_user(new_user.model_dump())
 
-    jwt_token = generate_jwt(new_user)
-    return {"user": new_user, "token": jwt_token}
+    jwt_token = generate_jwt(new_user.model_dump())
+    return HTMLResponse(f"""
+        <script>
+            window.opener.postMessage({{
+                token: "{jwt_token}",
+                user: {{
+                    id: "{new_user.id}",
+                    email: "{email}",
+                    firstName: "{new_user.firstName}",
+                    lastName: "{new_user.lastName}"
+                }}
+            }}, "*");
+            window.close();
+        </script>
+    """)
 
 @router.post("/login")
 async def login(request: Request):
@@ -99,29 +170,29 @@ async def login(request: Request):
 
 @router.post("/signup")
 async def signup(request: Request):
-    user = get_user_by_email(request.email)
+    data = await request.json()
+    user = get_user_by_email(data["email"])
     if user:
         raise HTTPException(status_code=409, detail="User with this email exists")
+    
+    hashedPassword = bcrypt.hashpw(data["password"].encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    new_user = User(
+        id= str(uuid.uuid4()),
+        firstName= data["firstName"],
+        lastName= data["lastName"],
+        email= data["email"],
+        hashedPassword= hashedPassword, 
+        graduationYear=data["graduationYear"],
+        resumes= [],
+        chats= [],
+        dateCreated=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        authProvider= "local"
+    )
 
-    hashedPassword = bcrypt.hashpw(request.password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    create_user(new_user.model_dump())
 
-
-    new_user = {
-        "id": str(uuid.uuid4()),
-        "firstName": request.firstName,
-        "lastName": request.lastName,
-        "email": request.email,
-        "hashedPassword": hashedPassword, 
-        "graduationYear": request.graduationYear,
-        "resumes": [],
-        "chats": [],
-        "dateCreated": datetime.datetime.utcnow().isoformat(),
-        "authProvider": "local"
-    }
-
-    create_user(new_user)
-
-    jwt_token = generate_jwt(new_user)
+    jwt_token = generate_jwt(new_user.model_dump())
     return {"user": new_user, "token": jwt_token}
+
 
 

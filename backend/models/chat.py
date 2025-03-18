@@ -10,7 +10,7 @@ class ChatMessage(BaseModel):
     content: Optional[str] = Field(None, description="Text message content (if applicable)")
     file_url: Optional[str] = Field(None, description="S3 link to the uploaded file (if applicable)")
     file_name: Optional[str] = Field(None, description="Original name of the uploaded file")
-    timestamp: datetime = Field(default_factory=datetime.utcnow, description="Message timestamp")
+    timestamp: datetime = Field(default_factory=datetime.now(datetime.timezone.utc), description="Message timestamp")
 
 class ResumeReviewChat(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), description="Unique chat ID")
@@ -26,5 +26,5 @@ class ResumeReviewChat(BaseModel):
     max_tokens: int = Field(default=4096, description="Token limit per request")
     total_tokens_used: int = Field(default=0, description="Track total tokens used in this chat")
 
-    dateCreated: datetime = Field(default_factory=datetime.utcnow)
-    lastUpdated: datetime = Field(default_factory=datetime.utcnow)
+    dateCreated: datetime = Field(default_factory=datetime.now(datetime.timezone.utc))
+    lastUpdated: datetime = Field(default_factory=datetime.now(datetime.timezone.utc))

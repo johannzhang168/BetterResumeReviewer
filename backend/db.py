@@ -1,27 +1,63 @@
 import boto3
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Key
 from models import user
 import os
 
-dynamodb = boto3.resource("dynamodb", region_name=os.getenv("AWS_REGION"))
-user_table = dynamodb.Table("Users")
+dynamodb = boto3.resource(
+      "dynamodb", 
+      region_name=os.getenv("AWS_REGION"),
+      aws_access_key_id=os.getenv("AWS_ACCESS_KEY"),
+      aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY")
+      )
+user_table = dynamodb.Table("User")
 chat_table = dynamodb.Table("Chats")
 
 def get_user_by_email(email: str):
-        try:
-                response = user_table.get_item(Key={"email": email})
-                return response.get("Item")
-        except ClientError as e:
-                print(e)
-                return None
+    try:
+        response = user_table.query(
+            IndexName="email-index",  
+            KeyConditionExpression=Key("email").eq(email)
+        )
+        items = response.get("Items", [])
+        return items[0] if items else None  
+    except ClientError as e:
+        print(f"Error fetching user: {e}")
+        return None
         
 def get_user_by_id(id: str):
         try:
-                response = user_table.get_item(Key={"id": id})
-                return response.get("Item")
+            response = user_table.get_item(Key={"id": id})
+            return response.get("Item")
         except ClientError as e:
-                print(e)
-                return None
+            print(e)
+            return None
+        
+def update_user_attributes(user_id: str, data: dict):
+    try:
+        print(user_id)
+        user = get_user_by_id(user_id)
+        if not user:
+            print("No user found")
+            return None
+        update_expression = "SET " + ", ".join(f"#{k} = :{k}" for k in data.keys())
+        expression_attribute_values = {f":{k}": v for k, v in data.items()}
+        expression_attribute_names = {f"#{k}": k for k in data.keys()} 
+
+        user_table.update_item(
+            Key={"id": user_id},
+            UpdateExpression=update_expression,
+            ExpressionAttributeValues=expression_attribute_values,
+            ExpressionAttributeNames=expression_attribute_names,
+            ReturnValues="UPDATED_NEW",
+        )
+        updated_user = get_user_by_id(user_id)
+        
+        return updated_user
+    
+    except ClientError as e:
+        print("Error", e)
+        return None
 
 def update_user_resumes(user_id: str, chat_id: str):
     try:
