@@ -10,14 +10,54 @@ import { Separator } from "@/components/ui/separator"
 import { Eye, EyeOff, Github } from "lucide-react"
 import { useEffect, useState } from "react"
 import { FaGoogle } from "react-icons/fa"
+import { useNavigate } from "react-router-dom"
+import { useUser } from "@/context/useUser"
+import toast from "react-hot-toast"
 
 const LoginForm: React.FC = () => {
+  const navigate = useNavigate();
+  const BASEURL = import.meta.env.VITE_API_BASE_URL;
+  const setCurrentUser = useUser().setCurrentUser;
   // This would handle the email/password login submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Add your authentication logic here
-    console.log("Login form submitted")
+    
   }
+  const handleOAuthLogin = async (provider: "google" | "github") => {
+    const authWindow = window.open(
+      `${BASEURL}/auth/${provider}`,
+      "_blank",
+      "width=500,height=600"
+    );
+    
+    const checkPopup = setInterval(() => {
+      if (!authWindow || authWindow.closed) {
+        clearInterval(checkPopup);
+      }
+    }, 1000);
+  }
+
+  useEffect(() => {
+    const receiveMessage = (event: MessageEvent) => {
+      if (event.origin !== BASEURL) return;
+      const { token, user } = event.data;
+      if (token) {
+        localStorage.setItem("jwt", token);
+        setCurrentUser(user)
+        console.log(user)
+        if(!user.graduationYear){
+          navigate("/signup")
+        }
+        else{
+          toast.success("Logged in!")
+          navigate("/dashboard")
+        }
+      }
+    };
+  
+    window.addEventListener("message", receiveMessage);
+    return () => window.removeEventListener("message", receiveMessage);
+  },);
 
   useEffect(() => {
       document.body.style.overflow = "hidden";
@@ -84,11 +124,11 @@ const LoginForm: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <Button variant="destructive" type="button" className=" bg-red-500 hover:bg-red-600 text-white" onClick={() => console.log("Google login")}>
+              <Button variant="destructive" type="button" className=" bg-red-500 hover:bg-red-600 text-white" onClick={() => handleOAuthLogin("google")}>
                 <FaGoogle className="mr-2 h-4 w-4 "/>
                 Sign in with Google
               </Button>
-              <Button type="button" className=" bg-gray-900 hover:bg-gray-800 text-white" onClick={() => console.log("GitHub login")}>
+              <Button type="button" className=" bg-gray-900 hover:bg-gray-800 text-white" onClick={() =>  handleOAuthLogin("github")}>
                 <Github className="mr-2 h-4 w-4" />
                 Sign in with GitHub
               </Button>

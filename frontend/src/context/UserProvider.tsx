@@ -4,8 +4,8 @@ import { UserContext } from "./UserContext";
 
 interface User {
   id: string;
-  firstname: string;
-  lastname: string;
+  firstName: string;
+  lastName: string;
   email: string;
   status: string;
 }

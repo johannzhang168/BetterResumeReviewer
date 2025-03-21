@@ -18,9 +18,6 @@ const Navbar: React.FC = () => {
   
   
   const scrollToTop = () => {
-    if (window.location.pathname !== "/") {
-      window.location.href = "/";
-    }
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
   const scrollToSolution = () => {

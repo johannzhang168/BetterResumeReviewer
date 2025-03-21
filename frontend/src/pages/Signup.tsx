@@ -47,9 +47,9 @@ enum SignupStep {
   GRADUATION_YEAR = "graduationYear",
 }
 
-export default function Signup() {
+const Signup: React.FC = () => {
   const navigate = useNavigate();
-  const setCurrentUser = useUser().setCurrentUser
+  const {currentUser, setCurrentUser} = useUser()
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -61,9 +61,9 @@ export default function Signup() {
     },
   });
 
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState(currentUser?.id || "");
   const [showPassword, setShowPassword] = useState(false);
-  const [currentStep, setCurrentStep] = useState(SignupStep.EMAIL);
+  const [currentStep, setCurrentStep] = useState( SignupStep.EMAIL);
   const BASEURL = import.meta.env.VITE_API_BASE_URL;
 
   const emailRef = useRef<HTMLDivElement>(null);
@@ -76,6 +76,16 @@ export default function Signup() {
       document.body.style.overflow = "auto";
     };
   }, []);
+
+  useEffect(() =>{
+    if (currentUser) {
+      setCurrentStep(SignupStep.NAME)
+
+      form.setValue("email", currentUser.email || "oauth@placeholder.com");
+      form.setValue("password", "Oauth-password123")
+      setUserId(currentUser.id);
+    }
+  }, [form, currentUser])
 
   useEffect(() => {
     const scrollToRef = (ref: React.RefObject<HTMLDivElement | null>) => {
@@ -395,3 +405,5 @@ export default function Signup() {
       </div>
   );
 }
+
+export default Signup

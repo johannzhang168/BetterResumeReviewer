@@ -121,7 +121,8 @@ async def google_callback(request: Request):
                         id: "{existing_user['id']}",
                         email: "{email}",
                         firstName: "{existing_user['firstName']}",
-                        lastName: "{existing_user['lastName']}"
+                        lastName: "{existing_user['lastName']}",
+                        graduationYear: "{existing_user['graduationYear']}"
                     }}
                 }}, "*");
                 window.close();
