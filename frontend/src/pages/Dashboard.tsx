@@ -1,61 +1,47 @@
-import { useState } from "react";
+
+import { useUser } from "@/context/useUser";
+import NewResumeCard from "../components/dashboard/NewResumeCard";
+import ResumeCard from "../components/dashboard/ResumeCard";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Dashboard: React.FC = () => {
-  // Sample resume data
-  const [resumes, setResumes] = useState([
-    { id: 1, name: "Resume 1", date: "Opened 1:48pm" },
-    { id: 2, name: "Resume 2", date: "Opened March 7, 2025" },
-    { id: 3, name: "Resume 3", date: "Opened February 5, 2025" },
-  ]);
+  const user = useUser().currentUser
+  const navigate = useNavigate()
+  const resumes = [{ id: "1", title: "Resume 1", dateCreated: "Opened 1:48pm", coverImage: "blah blah" },
+    { id: "1", title: "Resume 1", dateOpened: "Opened 1:48pm", coverImage: "blah blah" },
+    { id: "1", title: "Resume 1", dateOpened: "Opened 1:48pm", coverImage: "blah blah" },
+    { id: "1", title: "Resume 1", dateOpened: "Opened 1:48pm", coverImage: "blah blah" }
+  ]
 
-  const handleUpload = () => {
-    // Implement file upload logic HERE
-    alert("Upload feature coming soon!");
-  };
+
+  // const handleUpload = () => {
+  //   // Implement file upload logic HERE
+  //   alert("Upload feature coming soon!");
+  // };
+  useEffect(() => {
+    if(!user){
+      navigate("/");
+    }
+  },) 
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Dashboard Standard View</h2>
-        <div className="p-2 bg-gray-200 rounded-full cursor-pointer">
-          {/* Future: Profile settings here... */}
-          <span className="text-lg">👤</span>
-        </div>
-      </div>
-
-      {/* Search Bar */}
-      <div className="flex justify-center mb-6">
-        <input
-          type="text"
-          placeholder="Search"
-          className="border p-2 rounded-lg w-1/2"
-        />
-      </div>
-
-      {/* Resume Grid */}
-      <div className="grid grid-cols-3 gap-6">
-        {/* Upload New Resume Card */}
-        <div
-          className="border border-gray-400 rounded-lg flex items-center justify-center cursor-pointer h-48 bg-white"
-          onClick={handleUpload}
-        >
-          <span className="text-4xl">+</span>
-        </div>
-
-        {/* Uploaded Resumes */}
+    <div className="min-h-screen bg-blue-100 p-6 flex justify-center min-w-[100px]">
+      <div className="grid grid-cols-[repeat(auto-fit,252px)] mt-25 justify-center gap-x-6 gap-y-6 max-w-[85vw]">
+        <NewResumeCard onClick={() => console.log("eeee")} />
         {resumes.map((resume) => (
-          <div key={resume.id} className="border border-gray-400 rounded-lg bg-white p-4">
-            <div className="h-32 bg-gray-300 mb-4 flex items-center justify-center">
-              {/* Placeholder for resume preview */}
-              <span className="text-gray-600">Resume Preview</span>
-            </div>
-            <h3 className="font-bold">{resume.name}</h3>
-            <p className="text-sm text-gray-600">{resume.date}</p>
-          </div>
+          <ResumeCard
+            key={resume.id}
+            id={resume.id}
+            title={resume.title}
+            dateOpened={new Date()}
+            coverImage={resume.coverImage}
+          />
         ))}
       </div>
     </div>
+
+
   );
 };
 

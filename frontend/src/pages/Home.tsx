@@ -1,17 +1,28 @@
 import { useEffect, useState } from "react";
-import { Hero } from "../components/Hero";
-import { Problem } from "../components/Problem";
-import { Solution } from "../components/Solution";
-import { SignUpToday } from "../components/SignUpToday";
+import { Hero } from "../components/homepage/Hero";
+import { Problem } from "../components/homepage/Problem";
+import { Solution } from "../components/homepage/Solution";
+import { SignUpToday } from "../components/homepage/SignUpToday";
+import { useUser } from "@/context/useUser";
+import { useNavigate } from "react-router-dom";
 
-export default function Home() {
+const Home: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
+  const currentUser = useUser().currentUser;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if(currentUser){
+      console.log(currentUser)
+      navigate("/dashboard")
+    }
+  },)
 
   return (
     <div
@@ -31,3 +42,5 @@ export default function Home() {
     </div>
   );
 }
+
+export default Home
