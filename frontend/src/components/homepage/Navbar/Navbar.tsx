@@ -15,8 +15,6 @@ const Navbar: React.FC = () => {
   const path = useLocation().pathname;
 
   
-  
-  
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -116,7 +114,7 @@ const Navbar: React.FC = () => {
   }
   return(
     <nav className="h-[80px] fixed top-0 left-0 w-full bg-white/40 backdrop-blur-md py-5 px-4 md:px-8 flex flex-wrap justify-between items-center text-gray-900 z-50 shadow-lg transition-all duration-300">
-        <div className="flex items-center gap-2 hover:cursor-pointer" onClick={scrollToTop}>
+        <div className="flex items-center gap-2 hover:cursor-pointer" onClick={() => navigate("/")}>
           <motion.img
             src="./image.png"
             alt="logo"

@@ -55,7 +55,10 @@ async def github_callback(request: Request):
                     id: "{existing_user['id']}",
                     email: "{email}",
                     firstName: "{existing_user['firstName']}",
-                    lastName: "{existing_user['lastName']}"
+                    lastName: "{existing_user['lastName']}",
+                    resumes: "{existing_user['resumes']}",
+                    chats: "{existing_user['chats']}",
+                    graduationYear: "{existing_user['graduationYear']}"
                 }}
             }}, "*");
             window.close();
@@ -86,7 +89,10 @@ async def github_callback(request: Request):
                     id: "{new_user.id}",
                     email: "{email}",
                     firstName: "{new_user.firstName}",
-                    lastName: "{new_user.lastName}"
+                    lastName: "{new_user.lastName}",
+                    resumes: "{existing_user['resumes']}",
+                    chats: "{existing_user['chats']}",
+                    graduationYear: "{existing_user['graduationYear']}"
                 }}
             }}, "*");
             window.close();
@@ -122,7 +128,9 @@ async def google_callback(request: Request):
                         email: "{email}",
                         firstName: "{existing_user['firstName']}",
                         lastName: "{existing_user['lastName']}",
-                        graduationYear: "{existing_user['graduationYear']}"
+                        graduationYear: "{existing_user['graduationYear']}",
+                        resumes: "{existing_user['resumes']}",
+                        chats: "{existing_user['chats']}"
                     }}
                 }}, "*");
                 window.close();
@@ -151,7 +159,9 @@ async def google_callback(request: Request):
                         id: "{new_user.id}",
                         email: "{email}",
                         firstName: "{new_user.firstName}",
-                        lastName: "{new_user.lastName}"
+                        lastName: "{new_user.lastName}",
+                        resumes: "{existing_user['resumes']}",
+                        chats: "{existing_user['chats']}"
                     }}
                 }}, "*");
                 window.close();
@@ -167,11 +177,16 @@ async def google_callback(request: Request):
 
 @router.post("/login")
 async def login(request: Request):
-    user = get_user_by_email(request.email)
+    data = await request.json()
+    user = get_user_by_email(data['email'])
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
     
-    match_password = bcrypt.checkpw(user["hashed_password"].encode("utf-8"), request.password.encode("utf-8"))
+    
+    match_password = False
+    if(user["hashedPassword"]):
+        match_password = bcrypt.checkpw(user["hashedPassword"].encode("utf-8"), request.password.encode("utf-8"))
     if not match_password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
@@ -181,6 +196,7 @@ async def login(request: Request):
 @router.post("/signup")
 async def signup(request: Request):
     data = await request.json()
+    
     user = get_user_by_email(data["email"])
     if user:
         raise HTTPException(status_code=409, detail="User with this email exists")
