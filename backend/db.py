@@ -35,7 +35,6 @@ def get_user_by_id(id: str):
         
 def update_user_attributes(user_id: str, data: dict):
     try:
-        print(user_id)
         user = get_user_by_id(user_id)
         if not user:
             print("No user found")

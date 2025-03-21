@@ -3,15 +3,26 @@ import { Hero } from "../components/homepage/Hero";
 import { Problem } from "../components/homepage/Problem";
 import { Solution } from "../components/homepage/Solution";
 import { SignUpToday } from "../components/homepage/SignUpToday";
+import { useUser } from "@/context/useUser";
+import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {
   const [scrollY, setScrollY] = useState(0);
+  const currentUser = useUser().currentUser;
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => setScrollY(window.scrollY);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    if(currentUser){
+      console.log(currentUser)
+      navigate("/dashboard")
+    }
+  },)
 
   return (
     <div

@@ -13,12 +13,16 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useEffect } from "react";
-import { TypeAnimation } from "react-type-animation";
+import { useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Github } from "lucide-react";
+import { Github, Eye, EyeOff } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import { useState } from "react";
+import * as Separator from "@radix-ui/react-separator";
+import { useUser } from "@/context/useUser";
+import toast from "react-hot-toast";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+
 
 const formSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -37,8 +41,15 @@ const formSchema = z.object({
     .regex(/^\d{4}$/, "Graduation year must be a 4-digit number."),
 });
 
+enum SignupStep {
+  EMAIL = "email",
+  NAME = "name",
+  GRADUATION_YEAR = "graduationYear",
+}
+
 export default function Signup() {
   const navigate = useNavigate();
+  const setCurrentUser = useUser().setCurrentUser
   const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -51,35 +62,31 @@ export default function Signup() {
   });
 
   const [userId, setUserId] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [currentStep, setCurrentStep] = useState(SignupStep.EMAIL);
   const BASEURL = import.meta.env.VITE_API_BASE_URL;
-  console.log(BASEURL)
+
+  const emailRef = useRef<HTMLDivElement>(null);
+  const nameRef = useRef<HTMLDivElement>(null);
+  const graduationRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    document.body.style.overflow = "hidden";
-    scrollToEmail();
+    document.body.style.overflow = "hidden";  
     return () => {
       document.body.style.overflow = "auto";
     };
   }, []);
 
-  const scrollToEmail = () => {
-    const element = document.getElementById("email");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-  const scrollToName = () => {
-    const element = document.getElementById("name");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
-  const scrollToGraduation = () => {
-    const element = document.getElementById("graduationyear");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "center" });
-    }
-  };
+  useEffect(() => {
+    const scrollToRef = (ref: React.RefObject<HTMLDivElement | null>) => {
+      if (ref.current) {
+        ref.current.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    };
+    if (currentStep === SignupStep.EMAIL) scrollToRef(emailRef);
+    if (currentStep === SignupStep.NAME) scrollToRef(nameRef);
+    if (currentStep === SignupStep.GRADUATION_YEAR) scrollToRef(graduationRef);
+  }, [currentStep]);
 
   const handleSubmit = async (data: { email: string; password?: string; firstName: string; lastName: string; graduationYear: string; }) => {
     if (userId !== ""){
@@ -95,6 +102,7 @@ export default function Signup() {
       if(!response.ok){
         throw new Error(re.detail)
       }
+      setCurrentUser(re.user)
     }
     else{
       const response = await fetch(`${BASEURL}/signup`, {
@@ -105,15 +113,19 @@ export default function Signup() {
         body: JSON.stringify(data),
       })
       const re = await response.json()
+      if(response.status === 409){
+        toast.error("User with this email already exists! Please log in instead")
+        return
+      }
       if(!response.ok){
         throw new Error(re.detail)
       }
+      setCurrentUser(re.user)
     }
     navigate("/dashboard");
   };
 
   const handleOAuthLogin = async (provider: "google" | "github") => {
-    console.log(BASEURL)
     const authWindow = window.open(
       `${BASEURL}/auth/${provider}`,
       "_blank",
@@ -130,7 +142,6 @@ export default function Signup() {
     const receiveMessage = (event: MessageEvent) => {
       if (event.origin !== BASEURL) return;
       const { token, user } = event.data;
-  
       if (token) {
         localStorage.setItem("jwt", token);
         form.setValue("email", user.email || "oauth@placeholder.com");
@@ -138,7 +149,6 @@ export default function Signup() {
         form.setValue("firstName", user.firstName || "");
         form.setValue("lastName", user.lastName || "");
         setUserId(user.id);
-        // console.log(user.id);
       }
     };
   
@@ -148,14 +158,13 @@ export default function Signup() {
 
   useEffect(() => {
     if (userId !== "") {
-      console.log(userId)
-      scrollToName();
+      setCurrentStep(SignupStep.NAME)
     }
   }, [userId])
 
   return (
     <div
-      className="relative min-h-screen transition-all duration-500 min-w-[100px]"
+      className="relative min-h-[200vh] transition-all duration-500 min-w-[200px] flex justify-center items-center "
       style={{
         background: `linear-gradient(45deg, 
           rgba(255, 255, 255, 1) 0%, 
@@ -163,183 +172,226 @@ export default function Signup() {
           rgba(150, 200, 250, ${0.3 + scrollY / 3000}) 100%)`,
       }}
       >
-        <div className="min-h-[200vh] flex flex-col items-center justify-center">   
-          <div id="email" className="h-screen flex flex-col justify-center w-[50vw] space-y-5">
-          <TypeAnimation
-            sequence={[
-              "Just a few steps before you're on your way...", 
-              1000
-            ]}
-            wrapper="span"
-            className="text-4xl font-semibold bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent"
-            speed={50} 
-            repeat={0}
-          />
-            <div className="space-y-5">
-
-            </div>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-2xl">Email</FormLabel>
-                      <FormControl>
-                        <Input type="email" placeholder="Enter your email" className="bg-white" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-2xl">Password</FormLabel>
-                      <FormControl>
-                        <Input type="password" placeholder="Enter your password" className="bg-white" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  className="mt-4 w-full"
-                  type="button"
-                  onClick={async () => {
-                    const isValidEmail = await form.trigger("email");
-                    const isValidPassword = await form.trigger("password")
-                    if (isValidEmail && isValidPassword) {  
-                      scrollToName();
-                    }
-                  }}
-                >
-                  Continue
-                </Button>
-              </form>
-            </Form>
-            <div className="flex md:flex-row flex-col gap-y-3 justify-between mt-6">
-              <Button className="md:w-[24vw] w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600" 
-                onClick={async () => handleOAuthLogin("google")}
-              >
-                <FaGoogle/>
-                Sign up with Google
-              </Button>
-
-              <Button className="md:w-[24vw] w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 text-white"
-                onClick={async () => handleOAuthLogin("github")}
-              >
-                <Github />
-                Sign up with GitHub
-              </Button>
-            </div>
-          </div>
-          <div id="name" className="h-screen flex flex-col justify-center w-[50vw]">
-            <Form {...form} >
-              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
-                <FormField
-                  control={form.control}
-                  name="firstName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-2xl font-semibold">First Name</FormLabel>
-                      <FormControl>
-                        <Input type="text" placeholder="Enter your first name" className="bg-white" {...field}/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lastName"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-2xl font-semibold">Last Name</FormLabel>
-                      <FormControl>
-                        <Input type="text" placeholder="Enter your last name" className="bg-white" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                {userId === "" ? (
-                  <div className="flex flex-row justify-between">
+        <div className="flex flex-col items-center justify-center w-2/3 mt-100">
+          <div ref={emailRef} className="h-screen flex flex-col justify-center w-full space-y-5">
+            <Card className="w-full max-w-md mx-auto">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl font-bold">
+                Sign up
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4 overflow-y-auto">
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel htmlFor="email">Email</FormLabel>
+                          <FormControl>
+                            <Input type="email" placeholder="Enter your email" className="bg-white" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel htmlFor="password">Password</FormLabel>
+                          <div className="relative">
+                            <FormControl>
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                id="password"
+                                placeholder="Enter your password"
+                                className="bg-white pr-10"
+                                {...field}
+                              />
+                            </FormControl>
+                            <button
+                              type="button"
+                              className="absolute inset-y-0 right-3 flex items-center"
+                              onClick={() => setShowPassword((prev) => !prev)}
+                            >
+                              {showPassword ? <Eye size={20} /> : <EyeOff size={20} />}
+                            </button>
+                          </div>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                     <Button
-                      className="mt-4 w-4/9"
-                      type="button"
-                      onClick={() => scrollToEmail()}
-                    >
-                      Back
-                    </Button>
-                    <Button
-                      className="mt-4 w-4/9"
+                      className="mt-4 w-full bg-blue-600 hover:bg-blue-500 hover:cursor-pointer"
                       type="button"
                       onClick={async () => {
-                        const isValidFirst = await form.trigger("firstName");
-                        const isValidLast = await form.trigger("lastName");
-                        if (isValidFirst && isValidLast) {
-                          scrollToGraduation();
+                        const isValidEmail = await form.trigger("email")
+                        const isValidPassword = await form.trigger("password")
+                        if (isValidEmail && isValidPassword) {
+                          setCurrentStep(SignupStep.NAME)
                         }
                       }}
                     >
                       Continue
                     </Button>
-                  </div>
-                ) :  
-                <Button
-                  className="mt-4 w-full"
-                  type="button"
-                  onClick={async () => {
-                    const isValidFirst = await form.trigger("firstName");
-                    const isValidLast = await form.trigger("lastName");
-                    if (isValidFirst && isValidLast) {
-                      scrollToGraduation();
-                    }
-                  }}
-                >
-                  Continue
-                </Button>
-              }
-              </form>
-            </Form>
-          </div>
-          <div id="graduationyear" className="h-screen flex flex-col justify-center w-[50vw] ">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleSubmit)}>
-                <FormField
-                  control={form.control}
-                  name="graduationYear"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-2xl font-semibold">Graduation Year</FormLabel>
-                      <FormControl>
-                        <Input type="number" placeholder="Enter your graduation year" className="bg-white" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="flex flex-row justify-between">
+                  </form>
+                </Form>
+
+                <div className="flex justify-center items-center">
+                  <Separator.Root className="flex-1 h-px bg-gray-300" />
+                  <span className="px-4 text-gray-500 text-sm">OR</span>
+                  <Separator.Root className="flex-1 h-px bg-gray-300" />
+                </div>
+
+                <div className="flex md:flex-row flex-col gap-y-3 gap-x-3 justify-between">
                   <Button
-                    className="mt-4 w-4/9"
-                    type="button"
-                    onClick={() => scrollToName()}
+                    className="md:w-5/11 w-full flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 hover:cursor-pointer"
+                    onClick={async () => handleOAuthLogin("google")}
                   >
-                    Back
+                    <FaGoogle />
+                    Sign up with Google
                   </Button>
-                  <Button className="mt-4 w-4/9" type="submit">
-                    Submit
+
+                  <Button
+                    className="md:w-5/11 w-full flex items-center justify-center gap-2 bg-gray-900 hover:bg-gray-800 hover:cursor-pointer text-white"
+                    onClick={async () => handleOAuthLogin("github")}
+                  >
+                    <Github />
+                    Sign up with GitHub
                   </Button>
                 </div>
-              </form>
-            </Form>
+              </CardContent>
+              <CardFooter className="flex justify-center">
+                <p className="text-sm text-muted-foreground">
+                  Already have an account?{" "}
+                  <a href="/login" className="text-primary  underline-offset-4 hover:underline hover:text-blue-500">
+                    Sign in
+                  </a>
+                </p>
+              </CardFooter>
+            </Card>
+          </div>
+          <div ref={nameRef} className="h-screen flex flex-col justify-center w-full">
+            <Card className="w-full max-w-md mx-auto">
+              <CardHeader>
+                <CardTitle>
+                  <span  className="text-3xl font-semibold bg-gradient-to-r from-blue-500 to-teal-500 bg-clip-text text-transparent">
+                    Just a couple quick questions...
+                  </span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <Form {...form} >
+                  <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
+                    <FormField
+                      control={form.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-2xl font-semibold">Whats your first name?</FormLabel>
+                          <FormControl>
+                            <Input type="text" placeholder="Enter your first name" className="bg-white" {...field}/>
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-2xl font-semibold">Whats your last name?</FormLabel>
+                          <FormControl>
+                            <Input type="text" placeholder="Enter your last name" className="bg-white" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    {userId === "" ? (
+                      <div className="flex flex-row justify-between">
+                        <Button
+                          className="mt-4 w-4/9 hover:cursor-pointer"
+                          type="button"
+                          onClick={() => setCurrentStep(SignupStep.EMAIL)}
+                        >
+                          Back
+                        </Button>
+                        <Button
+                          className="mt-4 w-4/9 bg-blue-600 hover:bg-blue-500 hover:cursor-pointer"
+                          type="button"
+                          onClick={async () => {
+                            const isValidFirst = await form.trigger("firstName");
+                            const isValidLast = await form.trigger("lastName");
+                            if (isValidFirst && isValidLast) {
+                              setCurrentStep(SignupStep.GRADUATION_YEAR);
+                            }
+                          }}
+                        >
+                          Continue
+                        </Button>
+                      </div>
+                    ) :  
+                    <Button
+                      className="mt-4 w-full bg-blue-600 hover:bg-blue-500 hover:cursor-pointer"
+                      type="button"
+                      onClick={async () => {
+                        const isValidFirst = await form.trigger("firstName");
+                        const isValidLast = await form.trigger("lastName");
+                        if (isValidFirst && isValidLast) {
+                          setCurrentStep(SignupStep.GRADUATION_YEAR);
+                        }
+                      }}
+                    >
+                      Continue
+                    </Button>
+                  }
+                  </form>
+                </Form>
+              </CardContent>
+            </Card>
+            
+          </div>
+          <div ref={graduationRef} className="h-screen flex flex-col justify-center w-full ">
+          <Card className="w-full max-w-md mx-auto">
+            <CardContent className="space-y-4">
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(handleSubmit)}>
+                  <FormField
+                    control={form.control}
+                    name="graduationYear"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-2xl font-semibold">What year are you graduating?</FormLabel>
+                        <FormControl>
+                          <Input type="number" placeholder="Enter your graduation year" className="bg-white" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="flex flex-row justify-between ">
+                    <Button
+                      className="mt-4 w-4/9 hover:cursor-pointer"
+                      type="button"
+                      onClick={() => setCurrentStep(SignupStep.NAME)}
+                    >
+                      Back
+                    </Button>
+                    <Button className="mt-4 w-4/9 bg-blue-600 hover:bg-blue-500 hover:cursor-pointer" type="submit">
+                      Submit
+                    </Button>
+                  </div>
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
           </div>
         </div>
       </div>
-    
   );
 }

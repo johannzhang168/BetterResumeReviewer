@@ -17,12 +17,12 @@ const ThreeDots: React.FC = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" sideOffset={8}>
-        <DropdownMenuItem>
-          <Delete className="mr-2 h-4 w-4" />
+        <DropdownMenuItem >
+          <Delete className="mr-2 h-4 w-4 text-red-500" />
           Delete
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <ExternalLink />
+          <ExternalLink className="text-blue-500"/>
           Open in new tab
         </DropdownMenuItem>
       </DropdownMenuContent>

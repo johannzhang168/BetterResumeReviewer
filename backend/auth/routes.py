@@ -102,58 +102,67 @@ async def google_login(request: Request):
 
 @router.get("/auth/google/callback")
 async def google_callback(request: Request):
-    token = await oauth.google.authorize_access_token(request)
-    user_data = await oauth.google.get("userinfo", token=token)
-    user_info = user_data.json()
+    try:
+        token = await oauth.google.authorize_access_token(request)
+        print("Token Response:", token)
+        user_data = await oauth.google.get("userinfo", token=token)
+        user_info = user_data.json()
 
-    email = user_info.get("email")
-    existing_user = get_user_by_email(email)
+        email = user_info.get("email")
+        existing_user = get_user_by_email(email)
 
-    if existing_user:
-        jwt_token = generate_jwt(existing_user)
+        if existing_user:
+            jwt_token = generate_jwt(existing_user)
+            return HTMLResponse(f"""
+            <script>
+                window.opener.postMessage({{
+                    token: "{jwt_token}",
+                    user: {{
+                        id: "{existing_user['id']}",
+                        email: "{email}",
+                        firstName: "{existing_user['firstName']}",
+                        lastName: "{existing_user['lastName']}"
+                    }}
+                }}, "*");
+                window.close();
+            </script>
+            """)
+        new_user = User(
+            id=str(uuid.uuid4()),
+            firstName=user_info.get("given_name"),
+            lastName=user_info.get("family_name"),
+            email=email,
+            hashedPassword=None, 
+            graduationYear=None,
+            resumes=[],
+            chats=[],
+            dateCreated=datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            authProvider="google",
+        )
+        create_user(new_user.model_dump())
+
+        jwt_token = generate_jwt(new_user.model_dump())
         return HTMLResponse(f"""
-        <script>
-            window.opener.postMessage({{
-                token: "{jwt_token}",
-                user: {{
-                    id: "{existing_user['id']}",
-                    email: "{email}",
-                    firstName: "{existing_user['firstName']}",
-                    lastName: "{existing_user['lastName']}"
-                }}
-            }}, "*");
-            window.close();
-        </script>
+            <script>
+                window.opener.postMessage({{
+                    token: "{jwt_token}",
+                    user: {{
+                        id: "{new_user.id}",
+                        email: "{email}",
+                        firstName: "{new_user.firstName}",
+                        lastName: "{new_user.lastName}"
+                    }}
+                }}, "*");
+                window.close();
+            </script>
         """)
-    new_user = User(
-        id=str(uuid.uuid4()),
-        firstName=user_info.get("given_name"),
-        lastName=user_info.get("family_name"),
-        email=email,
-        hashedPassword=None, 
-        graduationYear=None,
-        resumes=[],
-        chats=[],
-        dateCreated=datetime.datetime.now(datetime.timezone.utc).isoformat(),
-        authProvider="google",
-    )
-    create_user(new_user.model_dump())
-
-    jwt_token = generate_jwt(new_user.model_dump())
-    return HTMLResponse(f"""
-        <script>
-            window.opener.postMessage({{
-                token: "{jwt_token}",
-                user: {{
-                    id: "{new_user.id}",
-                    email: "{email}",
-                    firstName: "{new_user.firstName}",
-                    lastName: "{new_user.lastName}"
-                }}
-            }}, "*");
-            window.close();
-        </script>
-    """)
+    except Exception as e:
+        print("OAuth Error:", str(e))
+        return HTMLResponse("""
+            <script>
+                window.close();
+            </script>
+        """)
 
 @router.post("/login")
 async def login(request: Request):
@@ -192,7 +201,7 @@ async def signup(request: Request):
     create_user(new_user.model_dump())
 
     jwt_token = generate_jwt(new_user.model_dump())
-    return {"user": new_user, "token": jwt_token}
+    return {"user": new_user.model_dump(), "token": jwt_token}
 
 
 

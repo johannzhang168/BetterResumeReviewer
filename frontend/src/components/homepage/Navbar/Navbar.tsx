@@ -13,6 +13,8 @@ const Navbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   const path = useLocation().pathname;
+
+  
   
   
   const scrollToTop = () => {
@@ -110,42 +112,30 @@ const Navbar: React.FC = () => {
             <SearchBar onChange={(arg) => console.log(arg)} />
           </div>
           <div className="relative">
-            {/* <button
-              className="p-2 bg-gray-200 w-12 h-12 rounded-full flex items-center justify-center hover:bg-gray-300"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              aria-label="Toggle menu"
-            >
-              <User className="w-8 h-8 text-gray-700" />
-            </button> */}
             <UserIcon/>
-            <ul
-              className={`absolute right-0 top-full mt-2 bg-white rounded-lg border border-gray-200 overflow-hidden transition-all duration-300 ${
-                isMenuOpen ? "opacity-100 scale-100" : "opacity-0 scale-95 pointer-events-none"
-              }`}
-            >
-              <li
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer text-center"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  console.log("Logout clicked");
-                }}
-              >
-                Logout
-              </li>
-              <li
-                className="px-4 py-2 text-gray-700 hover:bg-gray-100 cursor-pointer text-center"
-                onClick={() => {
-                  setIsMenuOpen(false);
-                  console.log("about clicked");
-                }}
-              >
-                Account
-              </li>
-            </ul>
           </div>
         </nav>
     );
   }
+  return(
+    <nav className="h-[80px] fixed top-0 left-0 w-full bg-white/40 backdrop-blur-md py-5 px-4 md:px-8 flex flex-wrap justify-between items-center text-gray-900 z-50 shadow-lg transition-all duration-300">
+        <div className="flex items-center gap-2 hover:cursor-pointer" onClick={scrollToTop}>
+          <motion.img
+            src="./image.png"
+            alt="logo"
+            className="w-12 h-12 opacity-80"
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 2 }}  
+          />
+          <div className="text-2xl md:text-3xl font-bold tracking-tight text-gray-700 "
+          style={{ fontFamily: "Arial, sans-serif" }}
+          >
+            StrongHire
+          </div>
+        </div>
+    </nav>
+  )
 };
 
 export default Navbar;

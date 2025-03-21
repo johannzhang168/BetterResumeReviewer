@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 export function Hero() {
   const navigate = useNavigate();
   return (
-  <section className="relative flex flex-col items-center justify-center h-[calc(100vh-12rem)] text-gray-900 text-center p-6 overflow-hidden">
+  <section className="relative flex flex-col items-center justify-center text-gray-900 text-center p-6 overflow-hidden">
      {/* <div className="absolute inset-0 z-0 animated-gradient"></div> */}
       <motion.h1
       initial={{ opacity: 0, y: 20 }}
@@ -31,7 +31,6 @@ export function Hero() {
           repeat={Infinity}
         />
       </span>
-      {/* to land your next dream job */}
       </motion.h1>
 
       <p className="text-lg sm:text-xl md:text-2xl font-medium text-gray-800 max-w-3xl mx-auto p-2 sm:p-6 z-10">
