@@ -18,7 +18,7 @@ import { Eye, EyeOff, Github } from "lucide-react"
 import { useEffect, useState } from "react"
 import { FaGoogle } from "react-icons/fa"
 import { useNavigate } from "react-router-dom"
-import { useUser } from "@/context/useUser"
+import { useUser } from "@/context/UseUser"
 import toast from "react-hot-toast"
 import {z} from "zod";
 import { zodResolver } from "@hookform/resolvers/zod"

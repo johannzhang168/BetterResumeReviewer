@@ -2,7 +2,7 @@ import React from "react";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu"
 import { User, LogOut, Settings } from "lucide-react"
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@/context/useUser";
+import { useUser } from "@/context/UseUser";
 
 const UserIcon:React.FC = () => {
   const navigate = useNavigate();

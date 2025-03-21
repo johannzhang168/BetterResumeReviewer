@@ -19,7 +19,7 @@ import { Github, Eye, EyeOff } from "lucide-react";
 import { FaGoogle } from "react-icons/fa";
 import { useState } from "react";
 import * as Separator from "@radix-ui/react-separator";
-import { useUser } from "@/context/useUser";
+import { useUser } from "@/context/UseUser";
 import toast from "react-hot-toast";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 

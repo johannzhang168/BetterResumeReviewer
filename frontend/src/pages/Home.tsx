@@ -3,7 +3,7 @@ import { Hero } from "../components/homepage/Hero";
 import { Problem } from "../components/homepage/Problem";
 import { Solution } from "../components/homepage/Solution";
 import { SignUpToday } from "../components/homepage/SignUpToday";
-import { useUser } from "@/context/useUser";
+import { useUser } from "@/context/UseUser";
 import { useNavigate } from "react-router-dom";
 
 const Home: React.FC = () => {

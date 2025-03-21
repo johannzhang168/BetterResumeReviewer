@@ -1,5 +1,5 @@
 
-import { useUser } from "@/context/useUser";
+import { useUser } from "@/context/UseUser";
 import NewResumeCard from "../components/dashboard/NewResumeCard";
 import ResumeCard from "../components/dashboard/ResumeCard";
 import { useEffect } from "react";
