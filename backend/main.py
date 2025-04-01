@@ -4,11 +4,13 @@ import os
 import boto3
 from auth.routes import router as oauth_router
 from api.user import router as user_router
+from api.chat import router as chat_router
 from starlette.middleware.sessions import SessionMiddleware 
 from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 FRONTEND_URL=os.getenv("FRONTEND_URL")
+
 
 app.add_middleware(
     CORSMiddleware,
@@ -21,6 +23,7 @@ app.add_middleware(
 app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET_KEY"))
 app.include_router(oauth_router)
 app.include_router(user_router)
+app.include_router(chat_router)
 
 
 handler = Mangum(app)

@@ -6,6 +6,8 @@ import Home from "./pages/Home";
 import Layout from "./layout";
 import { UserProvider } from "./context/UserProvider";
 import { Toaster } from "react-hot-toast";
+import Chat from "./pages/Chat";
+import ChatCreationForm from "./pages/ChatCreation";
 
 const App: React.FC = () => {
   return (
@@ -18,6 +20,8 @@ const App: React.FC = () => {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/chat/create" element={<ChatCreationForm/>}/>
+              <Route path="/chat/:chatId" element={<Chat/>}/>
             </Routes>
           </Layout>
       </UserProvider>

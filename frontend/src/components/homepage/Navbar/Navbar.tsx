@@ -28,14 +28,7 @@ const Navbar: React.FC = () => {
     return (
       <nav className="fixed top-0 left-0 w-full bg-white/40 backdrop-blur-md py-5 px-4 md:px-8 flex flex-wrap justify-between items-center text-gray-900 z-50 shadow-lg transition-all duration-300">
         <div className="flex items-center gap-2 hover:cursor-pointer" onClick={scrollToTop}>
-          <motion.img
-            src="./image.png"
-            alt="logo"
-            className="w-10 h-10 md:w-12 md:h-14 opacity-80"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 2 }}  
-          />
+         
           <div className="text-2xl md:text-3xl font-bold tracking-tight text-gray-700 "
           style={{ fontFamily: "Arial, sans-serif" }}
           >
@@ -91,18 +84,6 @@ const Navbar: React.FC = () => {
   if(path === "/dashboard"){
     return (
       <nav className="fixed top-0 left-0 w-full bg-white/40 backdrop-blur-md py-5 px-4 md:px-8 flex items-center justify-between text-gray-900 z-50 shadow-lg transition-all duration-300">
-          <div className="flex items-center gap-2">
-            <motion.img
-              src="./image.png"
-              alt="logo"
-              className="w-10 h-10 md:w-12 md:h-14 opacity-80"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 2 }}
-              onClick={scrollToTop}
-            />
-          </div>
-  
           <div className="flex-grow flex justify-center">
             <SearchBar onChange={(arg) => console.log(arg)} />
           </div>
@@ -115,14 +96,6 @@ const Navbar: React.FC = () => {
   return(
     <nav className="h-[80px] fixed top-0 left-0 w-full bg-white/40 backdrop-blur-md py-5 px-4 md:px-8 flex flex-wrap justify-between items-center text-gray-900 z-50 shadow-lg transition-all duration-300">
         <div className="flex items-center gap-2 hover:cursor-pointer" onClick={() => navigate("/")}>
-          <motion.img
-            src="./image.png"
-            alt="logo"
-            className="w-12 h-12 opacity-80"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 2 }}  
-          />
           <div className="text-2xl md:text-3xl font-bold tracking-tight text-gray-700 "
           style={{ fontFamily: "Arial, sans-serif" }}
           >

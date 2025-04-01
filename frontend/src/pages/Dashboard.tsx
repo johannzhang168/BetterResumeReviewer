@@ -17,8 +17,8 @@ const Dashboard: React.FC = () => {
 
   // const handleUpload = () => {
   //   // Implement file upload logic HERE
-  //   alert("Upload feature coming soon!");
   // };
+
   useEffect(() => {
     if(!user){
       navigate("/");
@@ -28,7 +28,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="min-h-screen bg-blue-100 p-6 flex justify-center min-w-[100px]">
       <div className="grid grid-cols-[repeat(auto-fit,252px)] mt-25 justify-center gap-x-6 gap-y-6 max-w-[85vw]">
-        <NewResumeCard onClick={() => console.log("eeee")} />
+        <NewResumeCard onClick={() => navigate("/chat/create")} />
         {resumes.map((resume) => (
           <ResumeCard
             key={resume.id}

@@ -52,7 +52,7 @@ export function Solution() {
           <Upload className="text-6xl text-blue-600 mb-6" />
           <h3 className="text-2xl font-semibold mb-4">1. Start a chat</h3>
           <p className="text-lg">
-            Upload your resume, specify the roles you are looking for, and our specialized model will analyze it along with your profile attributes to provide specialized feedback.
+            Upload your resume, and paste the job description of your desired role, and our specialized model will analyze it along with your profile attributes to provide specialized feedback.
           </p>
         </motion.div>
 
@@ -80,7 +80,7 @@ export function Solution() {
           className="p-8 rounded-lg bg-gradient-to-b from-white to-gray-100 border border-gray-300 hover:shadow-2xl transition-all duration-300 ease-in-out flex flex-col items-center text-center"
         >
           <Repeat className="text-6xl text-blue-600 mb-6" />
-          <h3 className="text-2xl font-semibold mb-4">3. Repeat!</h3>
+          <h3 className="text-2xl font-semibold mb-4">3. Rinse and Repeat!</h3>
           <p className="text-lg">Chat for as long as you'd like, or start a new chat.</p>
         </motion.div>
       </motion.div>

@@ -42,6 +42,29 @@ const LoginForm: React.FC = () => {
       password:"",
     },
   });
+
+  useEffect(() => {
+    const handleViewportResize = () => {
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
+    };
+  
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleViewportResize);
+    } else {
+      window.addEventListener("resize", handleViewportResize);
+    }
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleViewportResize);
+      } else {
+        window.removeEventListener("resize", handleViewportResize);
+      }
+    };
+  },);
+
   const handleSubmit = async (data: {email: string, password: string}) => {
     try {
       const response = await fetch(`${BASEURL}/login`, {
@@ -128,12 +151,12 @@ const LoginForm: React.FC = () => {
           rgba(150, 200, 250, ${0.3 + scrollY / 3000}) 100%)`,
       }}
       >
-        <Card className="w-full max-w-md mx-auto">
+        <Card className="w-full max-w-md mx-auto h-[70vh]">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold">Login</CardTitle>
             <CardDescription>Enter your email and password to login to your account</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-4 overflow-y-auto" style={{ flex: 1 }}>
           <Form {...form}>
             <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
               <FormField
@@ -195,7 +218,7 @@ const LoginForm: React.FC = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="flex md:flex-row flex-col gap-4">
             <Button variant="destructive" type="button" className=" bg-red-500 hover:bg-red-600 text-white" onClick={() => handleOAuthLogin("google")}>
               <FaGoogle className="mr-2 h-4 w-4 "/>
               Sign in with Google

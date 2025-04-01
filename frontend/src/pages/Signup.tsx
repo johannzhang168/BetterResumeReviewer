@@ -98,6 +98,37 @@ const Signup: React.FC = () => {
     if (currentStep === SignupStep.GRADUATION_YEAR) scrollToRef(graduationRef);
   }, [currentStep]);
 
+  const refMap = {
+    [SignupStep.EMAIL]: emailRef,
+    [SignupStep.NAME]: nameRef,
+    [SignupStep.GRADUATION_YEAR]: graduationRef,
+  };
+  
+  useEffect(() => {
+    const handleViewportResize = () => {
+      const currentRef = refMap[currentStep];
+      if (currentRef?.current) {
+        currentRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        });
+      }
+    };
+  
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleViewportResize);
+    } else {
+      window.addEventListener("resize", handleViewportResize);
+    }
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener("resize", handleViewportResize);
+      } else {
+        window.removeEventListener("resize", handleViewportResize);
+      }
+    };
+  },);
+
   const handleSubmit = async (data: { email: string; password?: string; firstName: string; lastName: string; graduationYear: string; }) => {
     if (userId !== ""){
       delete data.password
@@ -174,7 +205,7 @@ const Signup: React.FC = () => {
 
   return (
     <div
-      className="relative min-h-[200vh] transition-all duration-500 min-w-[200px] flex justify-center items-center "
+      className="relative min-h-[300vh] transition-all duration-500 min-w-[200px] flex justify-center items-center"
       style={{
         background: `linear-gradient(45deg, 
           rgba(255, 255, 255, 1) 0%, 
@@ -182,15 +213,15 @@ const Signup: React.FC = () => {
           rgba(150, 200, 250, ${0.3 + scrollY / 3000}) 100%)`,
       }}
       >
-        <div className="flex flex-col items-center justify-center w-2/3 mt-100">
+        <div className="flex flex-col items-center justify-center md:w-2/3 sm:w-[80vw]">
           <div ref={emailRef} className="h-screen flex flex-col justify-center w-full space-y-5">
-            <Card className="w-full max-w-md mx-auto">
+            <Card className="w-full h-[65vh] max-w-md mx-auto">
               <CardHeader className="space-y-1">
                 <CardTitle className="text-2xl font-bold">
                 Sign up
                 </CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4 overflow-y-auto">
+              <CardContent className="space-y-4 overflow-y-auto" style={{ flex: 1 }}>
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-5">
                     <FormField
