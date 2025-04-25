@@ -6,6 +6,7 @@ interface User {
   id: string;
   firstName: string;
   lastName: string;
+  chats: string[];
   email: string;
   status: string;
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom"
@@ -85,7 +84,7 @@ const Navbar: React.FC = () => {
     return (
       <nav className="fixed top-0 left-0 w-full bg-white/40 backdrop-blur-md py-5 px-4 md:px-8 flex items-center justify-between text-gray-900 z-50 shadow-lg transition-all duration-300">
           <div className="flex-grow flex justify-center">
-            <SearchBar onChange={(arg) => console.log(arg)} />
+            <SearchBar/>
           </div>
           <div className="relative">
             <UserIcon/>

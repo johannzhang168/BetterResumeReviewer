@@ -1,71 +1,313 @@
 "use client"
-import React, { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect, useCallback } from "react"
 import { Send, Paperclip } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useLocation, useNavigate, useParams } from "react-router-dom"
+import { useUser } from "@/context/UseUser"
+import toast from "react-hot-toast"
+import "katex/dist/katex.min.css";
+import Message from "@/components/chat/Message"
+import NotFound from "@/components/Empty"
+import LoadingSpinner from "@/components/Loading"
 
 interface Message {
   id: string
   content: string
   role: "user" | "assistant"
-  timestamp: Date
-  attachments?: File[]
+  timestamp: string
+  file_url?: string
+  file_name?: string
 }
 
-const Chat: React.FC = () => {
+interface Chat {
+  id: string,
+  lastUpdated?: string,
+  max_tokens: number,
+  messages: Message[],
+  model: string,
+  name: string,
+  resumes: string[],
+  temperature: number,
+  thumbnail: string,
+  total_tokens_used: number,
+  userid: string
+}
 
+const Chat: React.FC= () => {
   //this will be under chat/:chatId
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "Hello! How can I help you today?",
-      role: "assistant",
-      timestamp: new Date(),
-    },
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState("")
-  const [files, setFiles] = useState<File[]>([])
+  const [file, setFile] = useState<File | undefined>()
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const location = useLocation();
+  const [initialData, setInitialData] = useState(() => location.state?.data || null);
+  const hasSentInitial = useRef<boolean>(false);
+  const {currentUser, setCurrentUser} = useUser();
+  const BASE_URL = import.meta.env.VITE_API_BASE_URL
+  const { chatId } = useParams();
+  const [chat, setChat] = useState<Chat | null>(null);
+  const [isDisabled, setIsDisabled] = useState(false);
+  const [loadingData, setLoadingData] = useState(true);
+  const [isAuthorized, setIsAuthorized] = useState<boolean | null>(null);
+  const shouldAutoScroll = useRef(true);
+  const navigate = useNavigate();
+  // const [shouldCheck, setShouldCheck] = useState(false);
+  // const [shouldCheck, setShouldCheck] = useState(false);
+
+
+  // const navigate = useNavigate();
+  // useEffect(() => {
+    
+  // },) 
+
+  const handleSendMessage = useCallback(async (e?: React.FormEvent, fileOverride?: File, jobDescription?: string) => {
+    if (e) e.preventDefault();
+    if(!chatId || !currentUser){
+      return;
+    }
+    if (!input.trim() && !jobDescription && !file && !fileOverride || !currentUser){
+      return;
+    } 
+    // console.log("sending message")
+    setIsLoading(true);
+  
+    const body = new FormData();
+    
+    body.append("userId", currentUser.id);
+    if (file) body.append("resume", file);
+    else if (fileOverride) body.append("resume", fileOverride)
+
+    if (input) body.append("query", input.trim());
+    else if (jobDescription) body.append("query", jobDescription)
+  
+    const userMessage: Message = {
+      id: "",
+      content: input.trim(),
+      role: "user",
+      timestamp: "",
+    };
+  
+    const resumeMessage: Message = {
+      id: "",
+      content: "",
+      role: "user",
+      timestamp: "",
+      file_url: "",
+      file_name: file?.name,
+    };
+  
+    const optimisticMessages: Message[] = [];
+    if (file) optimisticMessages.push(resumeMessage);
+    if (input) optimisticMessages.push(userMessage);
+  
+
+    setMessages(prev => [...prev, ...optimisticMessages]);
+    // console.log("here")
+    setInput("");
+    setFile(undefined);
+  
+    const response = await fetch(`${BASE_URL}/chat/ask/${chatId}`, {
+      method: "POST",
+      body: body,
+    });
+  
+    if (!response.ok || !response.body) {
+      toast.error("Failed to send message");
+      setIsLoading(false);
+      return;
+    }
+  
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder("utf-8");
+  
+    let buffer = "";
+    let fullContent = "";
+    let isFirstChunk = true;
+    let assistantIndex: number | undefined = undefined;
+  
+    let currentMessages: Message[] = [...optimisticMessages];
+  
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+  
+      buffer += decoder.decode(value, { stream: true });
+      const lines = buffer.split("\n");
+      buffer = lines.pop() || ""; // keep incomplete line
+  
+      for (const line of lines) {
+        if (!line.startsWith("data: ")) continue;
+  
+        const payloadRaw = line.slice(6).trim();
+        if (payloadRaw === "[DONE]") break;
+  
+        try {
+          const payload = JSON.parse(payloadRaw);
+          if (isFirstChunk) {
+            isFirstChunk = false;
+  
+            const updatedMessages: Message[] = [];
+  
+            if (payload.resumeMsg) {
+              updatedMessages.push({
+                id: payload.resumeMsg.id,
+                content: payload.resumeMsg.content,
+                role: "user",
+                timestamp: payload.resumeMsg.timestamp,
+                file_url: payload.resumeMsg.file_url,
+                file_name: payload.resumeMsg.file_name,
+              });
+            }
+  
+            if (payload.userMsg) {
+              updatedMessages.push({
+                id: payload.userMsg.id,
+                content: payload.userMsg.content,
+                role: "user",
+                timestamp: payload.userMsg.timestamp,
+              });
+            }
+            currentMessages = currentMessages.slice(0, -updatedMessages.length);
+            currentMessages = [...currentMessages, ...updatedMessages];
+  
+            assistantIndex = currentMessages.length;
+            currentMessages.push({
+              id: "",
+              content: "",
+              role: "assistant",
+              timestamp: new Date().toISOString(),
+            });
+  
+            setMessages([...messages, ...currentMessages]);
+          }
+          else if (payload.token) {
+            fullContent += payload.token;
+  
+            if (assistantIndex !== undefined) {
+              currentMessages[assistantIndex] = {
+                ...currentMessages[assistantIndex],
+                content: fullContent,
+              };
+  
+              setMessages([...messages, ...currentMessages]);
+            }
+          }
+        } catch (err) {
+          toast.error("Stream parsing error");
+          console.error("Stream parsing error:", err, line);
+        }
+      }
+    }
+    setIsLoading(false);
+  }, [BASE_URL, chatId, currentUser, file, input, messages]);
+
+  
+  
+  function base64ToUint8Array(base64: string): Uint8Array {
+    const binaryString = atob(base64); 
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    return bytes;
+  }
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages])
-
-  const handleSendMessage = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!input.trim() && files.length === 0) return
-
-    const userMessage: Message = {
-      id: Date.now().toString(),
-      content: input,
-      role: "user",
-      timestamp: new Date(),
-      attachments: files.length > 0 ? [...files] : undefined,
+    if(!currentUser){
+      return;
     }
-
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-    setFiles([])
-    setIsLoading(true)
-
-    setTimeout(() => {
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        content: "I received your message. How else can I assist you?I received your message. How else can I assist you?I received your message. How else can I assist you?I received your message. How else can I assist you?I received your message. How else can I assist you?I received your message. How else can I assist you?",
-        role: "assistant",
-        timestamp: new Date(),
+    const sendInitialMessage = async () => {
+      if (initialData && !hasSentInitial.current) {
+        console.log(initialData)
+        hasSentInitial.current = true;
+        setCurrentUser(initialData.user)
+        const byteArray = base64ToUint8Array(initialData.resume);
+        const blob = new Blob([byteArray], { type: "application/pdf" });
+        const resume = new File([blob], initialData.resume_name, { type: "application/pdf" });
+        const jobDescription = initialData.job_description;
+        // console.log("sending initial message")
+        await handleSendMessage(undefined, resume, jobDescription);
+        setInitialData(null);
+        navigate(location.pathname, { replace: true, state: null });
       }
-      setMessages((prev) => [...prev, assistantMessage])
-      setIsLoading(false)
-    }, 1000)
-  }
+    };
+    const fetchData = async () => {
+      setLoadingData(true);
+      if(!chatId || !currentUser){
+        setLoadingData(false)
+        setIsDisabled(true)
+        return;
+      }
+      
+      const response = await fetch(`${BASE_URL}/chat/get/${chatId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+  
+      const data = await response.json();
+      if(data.status_code === 404){
+        setIsAuthorized(false); 
+        return;
+      }
+      if (data.status !== 200) {
+        toast.error("Error fetching chat data");
+        throw new Error(response.statusText);
+      }
+
+      if(data.chat.userid !== currentUser.id){
+        console.log(currentUser.chats)
+        setLoadingData(false)
+        setIsAuthorized(false)
+        setIsDisabled(true);
+        return;
+      }
+      setChat(data.chat)
+      setMessages(data.chat.messages);
+      setLoadingData(false)
+    };
+    fetchData();
+    sendInitialMessage();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentUser
+  ]);
+
+  useEffect(() => {
+    if (chat) {
+      setIsAuthorized(chat.userid === currentUser?.id);
+    }
+  }, [chat, currentUser]);
+  
+  useEffect(() => {
+    if (shouldAutoScroll.current) {
+      requestAnimationFrame(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      });
+    }
+  }, [messages]);
+
+ 
+  // useEffect(() => {
+  //   const timer = setTimeout(() => {
+  //     setShouldCheck(true);
+  //   }, 1000); // Delay of 1000ms = 1 second
+
+  //   return () => clearTimeout(timer); // Cleanup on unmount
+  // }, []);
+
+  // if (!shouldCheck) {
+  //   return null; 
+  // }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFiles(Array.from(e.target.files))
+      setFile(Array.from(e.target.files)[0])
     }
   }
 
@@ -73,39 +315,38 @@ const Chat: React.FC = () => {
     fileInputRef.current?.click()
   }
 
+  
+
+  if (isAuthorized === false) {
+    return (
+      <div className="flex flex-col h-screen bg-background">
+        <NotFound />
+      </div>
+    );
+  }
+
+  if (loadingData) {
+    return(
+      <div className="flex items-center justify-center h-screen">
+        <LoadingSpinner />
+      </div>
+    )
+    
+  }
+
+ 
+
   return (
-    <div className="flex flex-col h-[85vh] bg-background mt-20">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 mb-5">
-        {messages.map((message) => (
-          <div key={message.id} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
-            {message.role === "user" ? 
-              <div className="max-w-[80%] rounded-lg p-3 bg-primary text-primary-foreground">
-                <div className="whitespace-pre-wrap">{message.content}</div>
-
-                {message.attachments && message.attachments.length > 0 && (
-                  <div className="mt-2 text-sm">
-                    <p className="font-medium">Attachments:</p>
-                    <ul className="list-disc pl-5">
-                      {message.attachments.map((file, index) => (
-                        <li key={index}>{file.name}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="text-xs opacity-70 mt-1">
-                  {message.timestamp.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                </div>
-              </div>
-             : 
-
-             <div className="whitespace-pre-wrap">{message.content}</div>
-             
-            }
-            
-          </div>
-        ))}
-
+    <div className="flex flex-col h-screen bg-background">
+      <div className="flex-1 p-4 space-y-4 pb-24 mt-20">
+      {messages.map((message, index) => {
+        if (!message || typeof message !== "object" || !("role" in message)) {
+          return null;
+        }
+        return (
+          <Message message={message} index={index} key={message.id}/>
+          );
+        })}
         {isLoading && (
           <div className="flex justify-start">
             <div className="bg-muted text-foreground rounded-lg p-3">
@@ -126,30 +367,25 @@ const Chat: React.FC = () => {
             </div>
           </div>
         )}
-
         <div ref={messagesEndRef} />
       </div>
 
-      {/* File preview area */}
-      {/* {files.length > 0 && (
-        <div className="px-4 py-2 bg-muted/50 border-t">
+      <div className="fixed bottom-0 left-0 w-full z-10 bg-background border-t">
+      {file && (
+        <div className="px-4 py-2 bg-muted/50 border-t ">
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium">Selected files:</span>
-            <div className="flex flex-wrap gap-2">
-              {files.map((file, index) => (
-                <div key={index} className="text-xs bg-muted px-2 py-1 rounded-md">
-                  {file.name}
-                </div>
-              ))}
+            <div className="flex flex-wrap gap-2"> 
+              {file.name}
             </div>
-            <Button variant="ghost" size="sm" onClick={() => setFiles([])} className="ml-auto text-xs">
+            <Button variant="ghost" size="sm" onClick={() => setFile(undefined)} className="ml-auto text-xs">
               Clear
             </Button>
           </div>
         </div>
-      )} */}
+      )}
 
-      <div className={`border-t p-4 fixed w-full bottom-0 left-0 ${isLoading ? 'opacity-50 pointer-events-none' : ''}`}>
+      <div className={`p-4 ${isLoading && isDisabled ? 'opacity-50 pointer-events-none' : ''}`}>
         <form onSubmit={handleSendMessage} className="flex gap-2">
           <Button
             type="button"
@@ -157,7 +393,7 @@ const Chat: React.FC = () => {
             size="icon"
             onClick={triggerFileInput}
             className="shrink-0"
-            disabled={isLoading}
+            disabled={isLoading && isDisabled}
           >
             <Paperclip className="h-5 w-5" />
             <span className="sr-only">Attach file</span>
@@ -191,6 +427,7 @@ const Chat: React.FC = () => {
             disabled={isLoading}
           />
         </form>
+      </div>
       </div>
     </div>
   )

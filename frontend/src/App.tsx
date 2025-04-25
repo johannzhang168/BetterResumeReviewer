@@ -8,24 +8,29 @@ import { UserProvider } from "./context/UserProvider";
 import { Toaster } from "react-hot-toast";
 import Chat from "./pages/Chat";
 import ChatCreationForm from "./pages/ChatCreation";
+import NotFound from "./components/Empty";
+import { ResumeProvider } from "./context/ResumeProvider";
 
 const App: React.FC = () => {
   return (
     <Router>
       <UserProvider>
-        <Toaster/>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/chat/create" element={<ChatCreationForm/>}/>
-              <Route path="/chat/:chatId" element={<Chat/>}/>
-            </Routes>
-          </Layout>
+        <ResumeProvider>
+          <Toaster/>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Signup />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/chat/create" element={<ChatCreationForm/>}/>
+                <Route path="/chat/:chatId" element={<Chat/>}/>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Layout>
+        </ResumeProvider>
       </UserProvider>
-    </Router>
+  </Router>
   );
 };
 
