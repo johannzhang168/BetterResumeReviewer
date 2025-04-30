@@ -36,7 +36,7 @@ async def upload_file_to_s3(file, userid: str, chatid: str):
             }
         )
 
-        file_url = f"https://{S3_BUCKET_NAME}/object/{filename}"
+        file_url = f"https://{S3_BUCKET_NAME}.s3.us-east-2.amazonaws.com/{filename}"
         return (file_url, file_bytes)
 
     except NoCredentialsError:
@@ -60,7 +60,7 @@ async def upload_thumbnail_to_s3(file, userid: str):
                 "ContentDisposition": "inline"
             }
         )
-        file_url = f"https://{S3_BUCKET_NAME}/object/{filename}"
+        file_url = f"https://{S3_BUCKET_NAME}.s3.us-east-2.amazonaws.com/{filename}"
         return file_url
 
     except NoCredentialsError:

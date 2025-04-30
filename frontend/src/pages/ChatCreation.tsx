@@ -91,18 +91,14 @@ const ChatCreationForm: React.FC = ()  => {
   }
 
   const handleFile = (file: File) => {
-    // Check if file is PDF or DOCX
     console.log(file instanceof File );
     const fileType = file.type
     if (
-      fileType !== "application/pdf" &&
-      fileType !== "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+      fileType !== "application/pdf"
     ) {
-      toast.error("Please upload a PDF or DOCX file")
+      toast.error("Please upload your resume as a PDF file!")
       return
     }
-
-    // Check file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast.error("Maximum file size is 5MB")
       return
@@ -134,10 +130,12 @@ const ChatCreationForm: React.FC = ()  => {
     }
     try{
       setIsSubmitting(true)
+      
       const response = await fetch(`${BASE_URL}/chat/create`, {
         method: "POST",
         body: formData,
       });
+      
       const re = await response.json();
       if(re.status != 200){
         toast.error("Error creating new chat")
@@ -145,11 +143,11 @@ const ChatCreationForm: React.FC = ()  => {
         return
       }
       setIsSubmitting(false)
-      navigate(`/chat/${re.chat}`)
+      re.user = user
+      navigate(`/chat/${re.chat}`, {state: {data: re}})
     } catch(error){
       console.log("error", error)
     }  
-    
   }
 
   return (
@@ -224,7 +222,7 @@ const ChatCreationForm: React.FC = ()  => {
                               className="hidden"
                               onChange={(e) => {
                                 handleFileChange(e);
-                                field.onChange(e.target.files?.[0] || null); // Update form state
+                                field.onChange(e.target.files?.[0] || null);
                               }}
                             />
                           </div>

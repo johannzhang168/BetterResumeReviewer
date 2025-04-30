@@ -3,6 +3,8 @@ from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Key
 from models import user
 import os
+from datetime import datetime
+from dateutil.parser import parse as parse_date
 
 dynamodb = boto3.resource(
       "dynamodb", 
@@ -96,7 +98,39 @@ def update_user_chats(user_id: str, new_chat_id: str):
         )
         print("User updated successfully")
     except ClientError as e:
-          print(e)
+        print(e)
+
+def get_user_chats(user_id: str):
+    try:
+        # print(user_id)
+        response = chat_table.query(
+            IndexName="userid-index",
+            KeyConditionExpression=Key("userid").eq(str(user_id))
+        ) 
+        items = response.get("Items", [])
+        # print(items)
+        chats = [
+            {
+                "id": item.get("id"),
+                "title": item.get("name"),
+                "dateCreated": item.get("dateCreated"),  
+                "lastUpdated": item.get("lastUpdated"),
+                "thumbnail": item.get("thumbnail")
+            }
+            for item in items
+        ]
+        def parse_iso(date_str):
+            try:
+                return parse_date(date_str)
+            except:
+                return datetime.min
+
+        chats.sort(key=lambda chat: parse_iso(chat.get("lastUpdated") or chat.get("dateCreated")), reverse=True)
+
+        return chats
+    except ClientError as e:
+        print(e)
+        return None
 
 def create_user(data: dict):
         try:
@@ -114,12 +148,35 @@ def get_chat_by_id(id: str):
                 print(e)
                 return None
         
+def get_chat_messages_by_id(id: str):
+    try:
+        response = chat_table.get_item(Key={"id":id})
+        chat = response.get("Item")
+        return chat["messages"]
+    except ClientError as e:
+        print(e)
+        return None
+        
 def update_chat(chat_id: str, chat_data: dict):
     try:
         chat_table.put_item(Item=chat_data)
     except ClientError as e:
         print(f"Error updating chat: {e}")
 
+def update_chat_messages(chat_id: str, chat_messages: dict):
+    try:
+        response = chat_table.update_item(
+            Key={'id': chat_id},
+            UpdateExpression="SET messages = :m",
+            ExpressionAttributeValues={':m': chat_messages},
+            ReturnValues="UPDATED_NEW"
+        )
+        print(response)
+        return response
+    except ClientError as e:
+        print(f"Error updating chat messages: {e}")
+        return None
+    
 def create_chat(data: dict):
     try:
        chat_table.put_item(Item=data)
