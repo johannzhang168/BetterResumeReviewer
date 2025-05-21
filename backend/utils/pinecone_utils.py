@@ -48,14 +48,18 @@ def retrieve_relevant_chunks(query, chat_id, top_k: int = 5):
                 top_k=top_k,
                 include_metadata=True,
         )
-        chunks = []
+        documents = []
         for match in results["matches"]:
                 metadata = match.get("metadata", {})
-                resumetext = metadata.get("resume_that_got_the_job")
-                if resumetext:
-                        chunks.append(resumetext)
-                job_description = metadata.get("job_description")
-                if job_description:
-                        chunks.append(job_description)
-        print(chunks)
-        return chunks
+                if metadata.get("doc_type") == "resume":
+                        resumetext = metadata.get("resume_text")
+                        documents.append(resumetext)
+                if metadata.get("doc_type") == "job_description":       
+                        job_description = metadata.get("job_description_text")
+                        documents.append(job_description)
+                if metadata.get("doc_type") == "job description and resume":
+                        job_description = metadata.get("job_description")
+                        resumetext = metadata.get("resume_text")
+                        combined = f"--- Job Description ---\n{job_description}\n\n--- Resume ---\n{resumetext}"
+                        documents.append(combined)
+        return documents

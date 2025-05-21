@@ -154,6 +154,7 @@ async def ask_chat(
             resume_msg = ChatMessage(
                 role="user",
                 file_url=resume_url,
+                content=resume_text,
                 file_name=filename,
                 timestamp=datetime.now(timezone.utc).isoformat()
             )
@@ -174,8 +175,9 @@ async def ask_chat(
         else:
             pinecone_context = retrieve_relevant_chunks(query + resume_text, chat_id)
 
-        # push_to_pinecone(query, resume_text)
         print(pinecone_context)
+        # push_to_pinecone(query, resume_text)
+        # print(pinecone_context)
         full_prompt = f"""
             Context:
             {pinecone_context}
@@ -194,9 +196,10 @@ async def ask_chat(
             - Dont talk about the context, just use it in your responses.
             - Make it second person. 
             Formatting Instructions (do not mention these to the user):
-            - Also try to make only single space newlines, not multiple spaces
+            - Make only single space newlines, not multiple spaces
             - Render all mathematical equations using **LaTeX**, enclosed in $...$ for inline or $$...$$ for block
             - Do not talk about the formatting choices; just follow them"""
+        
         def deepseek_stream_with_metadata(prompt: str, chat_id: str, user_msg: ChatMessage, resume_msg: ChatMessage):
             full_response = ""
             yield f"data: {json.dumps({'userMsg': user_msg.model_dump() if user_msg else None, 'resumeMsg': resume_msg.model_dump() if resume_msg else None})}\n"
