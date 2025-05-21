@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, UploadFile, File, Form, HTTPException, Depends
 from middleware.get_current_user import get_current_user
-from db import get_chat_by_id, update_chat, create_chat, get_user_by_id, update_user_resumes, update_user_chats, get_chat_messages_by_id, update_chat_messages, get_user_chats
+from db import get_chat_by_id, update_chat, create_chat, get_user_by_id, update_user_resumes, update_user_chats, get_chat_messages_by_id, update_chat_messages, get_user_chats, update_chat_summary, get_chat_summary
 from actions.upload_s3 import upload_file_to_s3, upload_thumbnail_to_s3
 from models.chat import ResumeReviewChat
 from models.chat import ChatMessage
@@ -11,6 +11,8 @@ from utils.pinecone_utils import retrieve_relevant_chunks, push_to_pinecone
 from utils.llm_utils import query_deepseek_model
 import json
 import base64
+from utils.langchain_utils import create_memory_for_chat, PersistentSummaryMemory
+from langchain.memory import ConversationSummaryMemory
 
 
 
@@ -120,6 +122,7 @@ async def fetch_chats(request: Request):
 async def ask_chat(
     chat_id: str,
     request: Request,
+    memory: PersistentSummaryMemory = Depends(create_memory_for_chat),
 ):
     try:
         print("stream request recieved")
@@ -140,9 +143,9 @@ async def ask_chat(
             raise HTTPException(status_code=403, detail="not user's chat")
         
         chat_messages = get_chat_messages_by_id(chat_id)
-        history_text = "\n\n".join(
-            [f"{msg['role'].capitalize()}: {msg.get('content', '')}" for msg in chat_messages if msg.get('content')]
-        )
+        # history_text = "\n\n".join(
+        #     [f"{msg['role'].capitalize()}: {msg.get('content', '')}" for msg in chat_messages if msg.get('content')]
+        # )
         resume_text = ""
         resume_msg = None
         if resume:
@@ -175,14 +178,19 @@ async def ask_chat(
         else:
             pinecone_context = retrieve_relevant_chunks(query + resume_text, chat_id)
 
-        print(pinecone_context)
+        # print(pinecone_context)
         # push_to_pinecone(query, resume_text)
         # print(pinecone_context)
+        vars = memory.load_memory_variables({"user_input": query})
+        chat_summary = vars["chat_summary"]
+
         full_prompt = f"""
+            Job description (always in context):
+            {chat_messages[1]}
             Context:
             {pinecone_context}
             Chat History:
-            {history_text}
+            {chat_summary}
             Resume Info:
             {resume_text}
             User Query:
@@ -216,6 +224,13 @@ async def ask_chat(
             chat_messages.append(assistant_msg.model_dump())
             update_chat_messages(chat_id, chat_messages)
 
+            memory.save_context(
+                {"user_input": query},
+                {"assistant_response": full_response}
+            )
+            new_summary = memory.load_memory_variables({"user_input": query})["chat_summary"]
+            print("new", new_summary)
+            update_chat_summary(chat_id, new_summary)
             yield "data: [DONE]\n"
 
         return StreamingResponse(deepseek_stream_with_metadata(full_prompt, chat_id, user_msg, resume_msg))

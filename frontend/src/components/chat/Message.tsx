@@ -1,5 +1,9 @@
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
-import MarkdownRenderer from "../MarkdownRenderer";
+
 
 interface MessageType {
   id: string
@@ -50,7 +54,10 @@ const Message: React.FC<MessageProps> = ({message, index}) => {
         // Markdown display for assistant
         <div className="text-muted-foreground w-full">
           <div className="prose prose-sm max-w-none overflow-y-auto text-muted-foreground whitespace-pre-wrap">
-            <MarkdownRenderer content={message.content}/>
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm, remarkMath]}
+              rehypePlugins={[rehypeKatex]}
+            >{message.content}</ReactMarkdown>
           </div>
           <div className="text-xs opacity-70 mt-1">
             {formatted}

@@ -11,6 +11,12 @@ export default defineConfig({
     resolve: {
       alias: {
         "@": path.resolve(__dirname, "./src"),
+        'react-syntax-highlighter/dist/esm/styles/prism/coy': path.resolve(__dirname, 'src/shims/prism-coy.ts'),
       },
+    },
+    server: {
+      host: '127.0.0.1',
+      port: 8080,
+      strictPort: true, 
     },
 });

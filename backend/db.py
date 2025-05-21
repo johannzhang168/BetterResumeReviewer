@@ -176,7 +176,53 @@ def update_chat_messages(chat_id: str, chat_messages: dict):
     except ClientError as e:
         print(f"Error updating chat messages: {e}")
         return None
+
+def update_chat_summary(chat_id: str, chat_summary: str):
+    try:
+        response = chat_table.update_item(
+            Key={"id": chat_id},
+            UpdateExpression="SET #sum = :s",
+            ExpressionAttributeNames={"#sum": "summary"},
+            ExpressionAttributeValues={":s": chat_summary},
+            ReturnValues="UPDATED_NEW",
+        )
+        return response["Attributes"]["summary"]
+    except ClientError as e:
+        print(f"Error updating chat summary: {e}")
+        return None
     
+
+def get_chat_summary(chat_id: str) -> str:
+    try:
+        resp = chat_table.get_item(
+            Key={"id": chat_id}
+        )
+    except ClientError as e:
+        print("error getting user", e)
+        return None
+    
+    if "Item" not in resp:
+        print("no chat found")
+        return None
+    
+    item = resp["Item"]
+    summary = item.get("summary")
+    if summary is None:
+        try:
+            chat_table.update_item(
+                Key={"id": chat_id},
+                UpdateExpression="SET #s = :empty",
+                ExpressionAttributeNames={"#s": "summary"},
+                ExpressionAttributeValues={":empty": ""},
+            )
+        except ClientError as e:
+            print("error initializing summary for chat", e)
+            return None
+        return ""
+    print("summary", summary)
+    return summary
+
+
 def create_chat(data: dict):
     try:
        chat_table.put_item(Item=data)
