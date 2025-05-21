@@ -55,3 +55,5 @@ dmypy.json
 
 # Coverage directories
 coverage/
+
+pineconescript.py

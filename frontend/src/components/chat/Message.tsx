@@ -1,8 +1,5 @@
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
-import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
 import "katex/dist/katex.min.css";
+import MarkdownRenderer from "../MarkdownRenderer";
 
 interface MessageType {
   id: string
@@ -21,6 +18,7 @@ interface MessageProps {
 
 
 const Message: React.FC<MessageProps> = ({message, index}) => {
+  console.log(message)
   const timestamp = new Date(message.timestamp);
   const now = new Date();
 
@@ -36,7 +34,9 @@ const Message: React.FC<MessageProps> = ({message, index}) => {
     <div key={message.id || index} className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}>
       {message.role === "user" ? (
         <div className="max-w-[80%] rounded-lg p-3 bg-primary text-primary-foreground">
-          <div className="whitespace-pre-wrap">{message.content}</div>
+          {!message.file_url ? <div className="whitespace-pre-wrap">{message.content}</div> :
+            null
+          }
           {message.file_url && (
             <div className="mt-2 text-sm">
               <p className="font-medium">{message.file_name}</p>
@@ -50,10 +50,7 @@ const Message: React.FC<MessageProps> = ({message, index}) => {
         // Markdown display for assistant
         <div className="text-muted-foreground w-full">
           <div className="prose prose-sm max-w-none overflow-y-auto text-muted-foreground whitespace-pre-wrap">
-            <ReactMarkdown
-              remarkPlugins={[remarkGfm, remarkMath]}
-              rehypePlugins={[rehypeKatex]}
-            >{message.content}</ReactMarkdown>
+            <MarkdownRenderer content={message.content}/>
           </div>
           <div className="text-xs opacity-70 mt-1">
             {formatted}
